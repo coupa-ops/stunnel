@@ -74,14 +74,26 @@ TIMEOUTclose = 0
 ;xforwardedfor=yes ; This line requires the haproxy patch
 <% end %>
 
-<% node[:stunnel][:services].each do |name, opts| -%>
-[<%= name %>]
-accept = <%= opts[:accept] %>
-connect = <%= opts[:connect] %>
-<% unless opts[:timeout_close].nil? -%>
-TIMEOUTclose = <%= opts[:timeout_close] ? 1 : 0 %>
-<% end -%>
-<% unless opts[:client].nil? -%>
-client = <%= opts[:client] ? "yes" : "no" %>
-<% end -%>
-<% end -%>
+<% unless (node['coupa-base']['nodename'] =~ /srv1$/) %>
+<% @server_list['client'].each { | type, values | %>
+[<%= "#{type}_client" %>]
+connect = <%= values['hostname'] %>:<%= values['connect'] %>
+accept = <%= values['accept'] %>
+client = yes
+
+<% } %>
+<% end %>
+<% @server_list['server'].each { | type, values | %>
+<% if (node['coupa-base']['nodename'] =~ /srv1$/) %>
+[<%= type %>]
+connect = <%= "#{values['hostname']}:#{values['connect']}" %>
+accept = <%= values['accept'] %>
+client = no
+<% else %>
+[<%= type %>]
+connect = <%= "#{node['coupa-base']['hostname']}" %>:<%= values['client_connect'] %>
+accept = <%= values['accept'] %>
+client = no
+
+<% end %>
+<% } %>

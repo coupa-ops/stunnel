@@ -39,8 +39,11 @@ template "/etc/stunnel/stunnel.conf" do
   notifies :restart, 'service[stunnel]', :delayed
 end
 
+server_list = encrypted_data_bag_item("stunnel_config", 'server')[node['coupa-base']['serverdomain']]
+
 template "/etc/default/stunnel4" do
   source "stunnel.default.erb"
+  variables( { server_list: server_list } )
   mode 0644
 end
 
