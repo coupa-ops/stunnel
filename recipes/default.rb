@@ -12,12 +12,12 @@ if(node[:stunnel][:use_chroot])
   end
 end
 
-unless(node.platform_family == 'debian')
+unless(node['platform']== 'debian')
   user 'stunnel4' do
     home '/var/run/stunnel4'
     system true
     shell '/bin/false'
-    supports :manage_home => true
+    manage_home true
   end
   cookbook_file '/etc/init.d/stunnel4' do
     source 'stunnel4'
@@ -46,7 +46,7 @@ end
 
 service "stunnel" do
   service_name node[:stunnel][:service_name]
-  supports :restart => true, :reload => true
+  supports :restart => true
   action [ :enable, :start ]
   not_if do
     node[:stunnel][:services].empty?
